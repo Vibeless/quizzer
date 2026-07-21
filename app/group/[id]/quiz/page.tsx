@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use, useCallback } from 'react';
+import { useState, useEffect, use, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -13,12 +13,7 @@ import {
 import { QuizGroup, Question, AttemptAnswer } from '@/lib/types';
 import { getGroup, getQuestions, saveAttempt } from '@/lib/storage';
 
-export default function QuizExecution({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id: groupId } = use(params);
+function QuizContent({ groupId }: { groupId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mode = (searchParams.get('mode') as 'study' | 'practice') || 'practice';
@@ -56,7 +51,6 @@ export default function QuizExecution({
 
   const handleSelectOption = useCallback((letter: string) => {
     if (!currentQuestion) return;
-    // In study mode, once answered, lock option selection to preserve immediate feedback integrity
     if (mode === 'study' && isAnswered) return;
 
     setSelectedAnswers((prev) => ({
@@ -114,7 +108,6 @@ export default function QuizExecution({
       if (!currentQuestion) return;
       const key = e.key.toUpperCase();
 
-      // Number / Letter selection (1->A, 2->B, etc or A, B, C, D)
       if (['A', 'B', 'C', 'D', 'E'].includes(key)) {
         const optionExists = currentQuestion.options.some((o) => o.letter === key);
         if (optionExists) handleSelectOption(key);
@@ -216,7 +209,6 @@ export default function QuizExecution({
 
             let optionStyle = 'border-white/10 bg-white/[0.04] text-slate-200 hover:border-indigo-500/40 hover:bg-white/[0.08]';
 
-            // Study mode immediate feedback styling
             if (mode === 'study' && isAnswered) {
               if (isCorrectOption) {
                 optionStyle = 'border-emerald-500/60 bg-emerald-500/15 text-white font-bold ring-1 ring-emerald-500/30';
@@ -255,7 +247,6 @@ export default function QuizExecution({
                   <span className="leading-snug">{opt.text}</span>
                 </div>
 
-                {/* Study Mode Indicator Badges */}
                 {mode === 'study' && isAnswered && (
                   <div className="shrink-0">
                     {isCorrectOption && <CheckCircle2 className="h-5 w-5 text-emerald-400" />}
@@ -267,7 +258,6 @@ export default function QuizExecution({
           })}
         </div>
 
-        {/* Study Mode Immediate Correction Banner & Explanation */}
         {mode === 'study' && isAnswered && (
           <div
             className={`p-4 rounded-xl mb-2 border animate-fade-in ${
@@ -331,4 +321,24 @@ export default function QuizExecution({
     </div>
   );
 }
+
+export default function QuizExecution({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: groupId } = use(params);
+
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-3xl px-4 py-12 text-center">
+        <div className="h-8 w-48 skeleton mx-auto mb-4" />
+        <div className="h-40 w-full skeleton rounded-2xl" />
+      </div>
+    }>
+      <QuizContent groupId={groupId} />
+    </Suspense>
+  );
+}
+
 

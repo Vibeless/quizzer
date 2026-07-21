@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Award,
   CheckCircle2,
   XCircle,
   Clock,
@@ -17,9 +16,7 @@ import confetti from 'canvas-confetti';
 import { QuizGroup, Question, Attempt } from '@/lib/types';
 import { getGroup, getQuestions, getAttempts } from '@/lib/storage';
 
-export default function QuizResults({ params }: { params: Promise<{ id: string }> }) {
-  const { id: groupId } = use(params);
-  const router = useRouter();
+function ResultsContent({ groupId }: { groupId: string }) {
   const searchParams = useSearchParams();
   const attemptId = searchParams.get('attemptId');
 
@@ -239,4 +236,20 @@ export default function QuizResults({ params }: { params: Promise<{ id: string }
     </div>
   );
 }
+
+export default function QuizResults({ params }: { params: Promise<{ id: string }> }) {
+  const { id: groupId } = use(params);
+
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
+        <div className="h-10 w-48 skeleton mx-auto mb-4" />
+        <div className="h-48 w-full skeleton rounded-2xl" />
+      </div>
+    }>
+      <ResultsContent groupId={groupId} />
+    </Suspense>
+  );
+}
+
 
