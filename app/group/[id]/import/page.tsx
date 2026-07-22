@@ -46,7 +46,7 @@ export default function ImportQuestions({ params }: { params: Promise<{ id: stri
 
   const handleQuestionChange = (index: number, updated: Question) => {
     const next = [...parsedQuestions];
-    
+
     // Re-verify validity
     const errors: string[] = [];
     let isValid = true;
@@ -105,20 +105,20 @@ export default function ImportQuestions({ params }: { params: Promise<{ id: stri
   const invalidCount = parsedQuestions.length - validCount;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 animate-fade-in">
+    <div className="mx-auto max-w-5xl px-3.5 py-6 sm:px-6 animate-fade-in">
       <Link
         href={`/group/${groupId}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-6 focus-ring rounded-lg p-1 -m-1"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-5 focus-ring rounded-xl px-2 py-2 -ml-2 min-h-[44px]"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Back to {group.name}
+        <ArrowLeft className="h-4 w-4 shrink-0" />
+        <span>Back to {group.name}</span>
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2.5">
-            <FileText className="h-7 w-7 text-indigo-400" />
-            Import Questions — {group.name}
+            <FileText className="h-7 w-7 text-indigo-400 shrink-0" />
+            <span>Import Questions — {group.name}</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             Paste raw question bank text below. Our deterministic parser will extract questions, options, and answer keys.
@@ -127,36 +127,38 @@ export default function ImportQuestions({ params }: { params: Promise<{ id: stri
 
         {hasParsed && (
           <button
+            type="button"
             onClick={() => {
               setHasParsed(false);
               setParsedQuestions([]);
             }}
-            className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5 self-start sm:self-center"
+            className="btn-secondary text-xs py-2.5 px-4 flex items-center gap-1.5 self-start sm:self-center min-h-[44px]"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Edit Text
+            <RotateCcw className="h-4 w-4 shrink-0" />
+            <span>Edit Text</span>
           </button>
         )}
       </div>
 
       {!hasParsed ? (
         /* STEP 1: TEXT AREA INPUT */
-        <div className="glass-panel p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="glass-panel p-5 sm:p-8 space-y-5">
+          <div className="flex items-center justify-between gap-2">
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
               Paste Question Bank Content
             </label>
             <button
+              type="button"
               onClick={handleLoadSample}
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 active:scale-95 transition-transform"
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 bg-indigo-500/10 px-3 py-2 rounded-xl border border-indigo-500/20 active:scale-95 transition-transform min-h-[44px]"
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              Load Sample Data
+              <Sparkles className="h-3.5 w-3.5 shrink-0" />
+              <span>Load Sample</span>
             </button>
           </div>
 
           <textarea
-            rows={14}
+            rows={12}
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
             placeholder={`1. Which protocol secures websites?
@@ -166,7 +168,7 @@ C. HTTPS
 D. SMTP
 Answer: C
 Explanation: HTTPS uses SSL/TLS encryption...`}
-            className="w-full glass-input font-mono text-xs sm:text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500/30 bg-[#080c14]/80"
+            className="w-full glass-input font-mono text-xs sm:text-sm leading-relaxed focus:ring-2 focus:ring-indigo-500/30 bg-[#080c14]/80 p-3.5"
           />
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
@@ -175,12 +177,13 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
             </p>
 
             <button
+              type="button"
               onClick={handleParse}
               disabled={!rawText.trim()}
-              className="btn-primary py-2.5 px-6 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary py-3 px-6 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] w-full sm:w-auto"
             >
-              <CheckCircle2 className="h-4 w-4" />
-              Parse Questions
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>Parse Questions</span>
             </button>
           </div>
         </div>
@@ -188,11 +191,11 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
         /* STEP 2: INTERACTIVE PREVIEW & EDIT */
         <div className="space-y-6">
           {/* Summary Banner */}
-          <div className="glass-panel p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 to-slate-900/60">
+          <div className="glass-panel p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 to-slate-900/60">
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                {parsedQuestions.length} Questions Extracted
+              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+                <span>{parsedQuestions.length} Questions Extracted</span>
               </h2>
               <div className="flex items-center gap-3 text-xs mt-1">
                 <span className="text-emerald-400 font-medium">✓ {validCount} Valid</span>
@@ -204,22 +207,23 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
 
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={handleSave}
                 disabled={validCount === 0}
-                className="btn-primary py-2.5 px-5 text-xs sm:text-sm disabled:opacity-50 shadow-lg shadow-emerald-600/20 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none"
+                className="btn-primary py-3 px-5 text-xs sm:text-sm disabled:opacity-50 shadow-lg shadow-emerald-600/20 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none min-h-[48px] w-full sm:w-auto"
               >
-                <Save className="h-4 w-4" />
-                Save {validCount} Questions to Group
+                <Save className="h-4 w-4 shrink-0" />
+                <span>Save {validCount} Questions to Group</span>
               </button>
             </div>
           </div>
 
           {/* Question Cards List */}
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             {parsedQuestions.map((q, qIndex) => (
               <div
                 key={q.id}
-                className={`glass-panel p-5 relative border transition-all ${
+                className={`glass-panel p-4 sm:p-5 relative border transition-all ${
                   q.isValid ? 'border-white/10 hover:border-indigo-500/30' : 'border-amber-500/40 bg-amber-500/5'
                 }`}
               >
@@ -239,9 +243,10 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => handleDeleteQuestion(qIndex)}
-                    className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors focus-ring"
-                    title="Remove Question"
+                    className="text-slate-400 hover:text-rose-400 p-2.5 rounded-xl hover:bg-rose-500/10 transition-colors focus-ring min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    aria-label="Remove Question"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -256,7 +261,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                     onChange={(e) =>
                       handleQuestionChange(qIndex, { ...q, question: e.target.value })
                     }
-                    className="w-full glass-input text-xs sm:text-sm font-medium"
+                    className="w-full glass-input text-xs sm:text-sm font-medium min-h-[44px]"
                   />
                 </div>
 
@@ -264,7 +269,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   {q.options.map((opt, optIndex) => (
                     <div key={opt.letter} className="flex items-center gap-2">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/15 font-mono font-bold text-indigo-300 text-xs shrink-0 border border-indigo-500/25">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/15 font-mono font-bold text-indigo-300 text-xs shrink-0 border border-indigo-500/25">
                         {opt.letter}
                       </span>
                       <input
@@ -275,7 +280,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                           nextOpts[optIndex] = { ...nextOpts[optIndex], text: e.target.value };
                           handleQuestionChange(qIndex, { ...q, options: nextOpts });
                         }}
-                        className="w-full glass-input text-xs py-1.5"
+                        className="w-full glass-input text-xs py-2 min-h-[44px]"
                       />
                     </div>
                   ))}
@@ -283,7 +288,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
 
                 {/* Answer Letter Selector */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-white/10 text-xs">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-2 sm:gap-3">
                     <span className="font-semibold text-slate-300">Correct Answer Option:</span>
                     <select
                       value={q.options.some((o) => o.letter === q.correctAnswer.letter) ? q.correctAnswer.letter : ''}
@@ -298,7 +303,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                           },
                         });
                       }}
-                      className="glass-input py-1 px-3 bg-[#0b101d] text-indigo-300 font-bold text-xs"
+                      className="glass-input py-2 px-3 bg-[#0b101d] text-indigo-300 font-bold text-xs min-h-[44px]"
                     >
                       <option value="">Select Answer</option>
                       {q.options.map((o) => (
@@ -322,12 +327,13 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
           {/* Bottom Action Footer */}
           <div className="flex justify-end pt-4">
             <button
+              type="button"
               onClick={handleSave}
               disabled={validCount === 0}
-              className="btn-primary py-3 px-8 text-xs sm:text-sm shadow-xl shadow-emerald-600/20 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none"
+              className="btn-primary py-3 px-8 text-xs sm:text-sm shadow-xl shadow-emerald-600/20 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none min-h-[48px] w-full sm:w-auto"
             >
-              <Save className="h-4.5 w-4.5" />
-              Save {validCount} Questions
+              <Save className="h-4.5 w-4.5 shrink-0" />
+              <span>Save {validCount} Questions</span>
             </button>
           </div>
         </div>

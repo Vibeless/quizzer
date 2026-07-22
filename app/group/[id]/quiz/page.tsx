@@ -63,12 +63,14 @@ function QuizContent({ groupId }: { groupId: string }) {
   const handleNext = useCallback(() => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentIndex, questions.length]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentIndex]);
 
@@ -159,21 +161,22 @@ function QuizContent({ groupId }: { groupId: string }) {
   const progressPercent = Math.round(((currentIndex + 1) / questions.length) * 100);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 animate-fade-in">
+    <div className="mx-auto max-w-3xl px-3.5 py-4 sm:px-6 sm:py-6 animate-fade-in pb-24 sm:pb-8">
       {/* Header Info & Progress Bar */}
-      <div className="mb-6 space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="mb-5 sm:mb-6 space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-between gap-2">
           <Link
             href={`/group/${groupId}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors focus-ring rounded-lg p-1 -m-1"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors focus-ring rounded-xl px-2 py-2 -ml-2 min-h-[44px]"
+            aria-label="Exit Quiz"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Exit Quiz
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <span>Exit Quiz</span>
           </Link>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <span
-              className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+              className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
                 mode === 'study'
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                   : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
@@ -182,9 +185,9 @@ function QuizContent({ groupId }: { groupId: string }) {
               {mode === 'study' ? 'Study Mode' : 'Practice Mode'}
             </span>
 
-            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-300 glass-panel py-1 px-3">
-              <Clock className="h-3.5 w-3.5 text-indigo-400" />
-              {formatTime(elapsedSeconds)}
+            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-300 glass-panel py-1.5 px-3">
+              <Clock className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+              <span>{formatTime(elapsedSeconds)}</span>
             </div>
           </div>
         </div>
@@ -197,7 +200,7 @@ function QuizContent({ groupId }: { groupId: string }) {
             </span>
             <span className="font-mono">{progressPercent}%</span>
           </div>
-          <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+          <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-300 rounded-full"
               style={{ width: `${progressPercent}%` }}
@@ -207,7 +210,7 @@ function QuizContent({ groupId }: { groupId: string }) {
       </div>
 
       {/* Main Question Card */}
-      <div className="glass-panel p-6 sm:p-8 relative border-indigo-500/20 mb-6">
+      <div className="glass-panel p-5 sm:p-8 relative border-indigo-500/20 mb-5 sm:mb-6">
         <div className="flex items-start justify-between gap-3 mb-4">
           <h2 className="text-base sm:text-lg font-bold text-white leading-relaxed">
             <span className="text-indigo-400 font-mono mr-2">Q{currentIndex + 1}.</span>
@@ -215,13 +218,13 @@ function QuizContent({ groupId }: { groupId: string }) {
           </h2>
         </div>
 
-        {/* Keyboard shortcut hint */}
+        {/* Keyboard shortcut hint (desktop) */}
         <div className="hidden sm:block text-[10px] text-slate-500 mb-4 font-mono">
           Tip: Press <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">A</kbd>-<kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">Z</kbd> or <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">1</kbd>-<kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">9</kbd> to select option, <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">←</kbd> <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">→</kbd> to navigate
         </div>
 
         {/* Options List */}
-        <div className="space-y-2.5 mb-6">
+        <div className="space-y-3 mb-6">
           {currentQuestion.options.map((opt) => {
             const isSelected = userSelection === opt.letter;
             const isCorrectOption = opt.letter === currentQuestion.correctAnswer.letter;
@@ -242,16 +245,17 @@ function QuizContent({ groupId }: { groupId: string }) {
 
             return (
               <button
+                type="button"
                 key={opt.letter}
                 onClick={() => handleSelectOption(opt.letter)}
                 disabled={mode === 'study' && isAnswered}
-                className={`w-full text-left p-3.5 sm:p-4 rounded-xl border transition-all flex items-center justify-between gap-3 text-xs sm:text-sm focus-ring ${optionStyle} ${
+                className={`w-full text-left p-4 rounded-xl border transition-all flex items-center justify-between gap-3 text-xs sm:text-sm focus-ring min-h-[52px] ${optionStyle} ${
                   mode === 'study' && isAnswered ? 'cursor-default' : 'cursor-pointer active:scale-[0.99]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-mono font-extrabold shrink-0 border ${
+                    className={`flex h-8 w-8 min-w-[32px] items-center justify-center rounded-lg text-xs font-mono font-extrabold shrink-0 border ${
                       mode === 'study' && isAnswered && isCorrectOption
                         ? 'bg-emerald-500 text-white border-emerald-400'
                         : mode === 'study' && isAnswered && isSelected && !isCorrectOption
@@ -288,18 +292,18 @@ function QuizContent({ groupId }: { groupId: string }) {
             <div className="flex items-center gap-2 font-bold mb-1 text-sm">
               {userSelection === currentQuestion.correctAnswer.letter ? (
                 <>
-                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400" />
+                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0" />
                   <span>Correct!</span>
                 </>
               ) : (
                 <>
-                  <XCircle className="h-4.5 w-4.5 text-rose-400" />
+                  <XCircle className="h-4.5 w-4.5 text-rose-400 shrink-0" />
                   <span>Incorrect</span>
                 </>
               )}
             </div>
 
-            <p className="text-xs text-slate-200 mt-1">
+            <p className="text-xs text-slate-200 mt-1 leading-relaxed">
               Correct Answer: <span className="font-bold text-white">Option {currentQuestion.correctAnswer.letter}</span> — {currentQuestion.correctAnswer.text}
             </p>
 
@@ -313,27 +317,33 @@ function QuizContent({ groupId }: { groupId: string }) {
         )}
       </div>
 
-      {/* Navigation & Submission Controls */}
-      <div className="flex items-center justify-between gap-3">
+      {/* Navigation Controls — Mobile Bottom Sticky Bar */}
+      <div className="fixed bottom-0 left-0 right-0 sm:relative z-30 bg-[#080c14]/90 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none p-3.5 sm:p-0 border-t sm:border-t-0 border-white/10 flex items-center justify-between gap-3 shadow-2xl sm:shadow-none">
         <button
+          type="button"
           onClick={handlePrev}
           disabled={currentIndex === 0}
-          className="btn-secondary text-xs py-2.5 px-4 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="btn-secondary text-xs py-3 px-4 min-h-[48px] disabled:opacity-30 disabled:cursor-not-allowed flex-1 sm:flex-none"
         >
           Previous
         </button>
 
         {currentIndex === questions.length - 1 ? (
           <button
+            type="button"
             onClick={handleSubmitQuiz}
-            className="btn-primary py-2.5 px-6 text-xs sm:text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none shadow-lg shadow-emerald-600/20"
+            className="btn-primary py-3 px-6 text-xs sm:text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none shadow-lg shadow-emerald-600/20 min-h-[48px] flex-1 sm:flex-none"
           >
             Submit Quiz
           </button>
         ) : (
-          <button onClick={handleNext} className="btn-primary py-2.5 px-5 text-xs sm:text-sm">
-            <span>Next Question</span>
-            <ArrowRight className="h-4 w-4" />
+          <button
+            type="button"
+            onClick={handleNext}
+            className="btn-primary py-3 px-5 text-xs sm:text-sm min-h-[48px] flex-1 sm:flex-none"
+          >
+            <span>Next</span>
+            <ArrowRight className="h-4 w-4 shrink-0" />
           </button>
         )}
       </div>

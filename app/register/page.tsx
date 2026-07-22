@@ -68,7 +68,7 @@ export default function RegisterPage() {
       await signUpWithEmail(email.trim(), password, name.trim() || undefined);
       router.push('/');
     } catch (err: any) {
-      setError(getAuthErrorMessage(err?.code || ''));
+      setError(getAuthErrorMessage(err?.code || '', err?.message));
     } finally {
       setIsLoading(false);
     }
@@ -85,10 +85,10 @@ export default function RegisterPage() {
           Already have an account?{' '}
           <Link
             href="/login"
-            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1 hover:underline"
+            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1 hover:underline min-h-[44px]"
           >
-            Sign in
-            <ArrowRight className="w-3 h-3" />
+            <span>Sign in</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </p>
       }
@@ -100,7 +100,7 @@ export default function RegisterPage() {
             Full Name
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <UserIcon className="h-4 w-4" />
             </div>
             <input
@@ -109,7 +109,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="John Doe"
-              className="glass-input !pl-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm min-h-[44px]"
               autoComplete="name"
             />
           </div>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
             Email Address
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <Mail className="h-4 w-4" />
             </div>
             <input
@@ -131,7 +131,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="glass-input !pl-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm min-h-[44px]"
               autoComplete="email"
             />
           </div>
@@ -143,7 +143,7 @@ export default function RegisterPage() {
             Password
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <Lock className="h-4 w-4" />
             </div>
             <input
@@ -153,13 +153,13 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm min-h-[44px]"
               autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 pl-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors min-h-[44px] min-w-[44px] justify-center"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -186,33 +186,33 @@ export default function RegisterPage() {
               <div className="grid grid-cols-2 gap-x-2 gap-y-1 pt-1 text-[10px] text-slate-400">
                 <div className="flex items-center gap-1">
                   {hasMinLength ? (
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
                   ) : (
-                    <X className="w-3 h-3 text-slate-600" />
+                    <X className="w-3 h-3 text-slate-600 shrink-0" />
                   )}
                   <span>At least 8 characters</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {hasNumber ? (
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
                   ) : (
-                    <X className="w-3 h-3 text-slate-600" />
+                    <X className="w-3 h-3 text-slate-600 shrink-0" />
                   )}
                   <span>Includes a number</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {hasMixCases ? (
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
                   ) : (
-                    <X className="w-3 h-3 text-slate-600" />
+                    <X className="w-3 h-3 text-slate-600 shrink-0" />
                   )}
                   <span>Upper & lowercase</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {hasSpecial ? (
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
                   ) : (
-                    <X className="w-3 h-3 text-slate-600" />
+                    <X className="w-3 h-3 text-slate-600 shrink-0" />
                   )}
                   <span>Special character</span>
                 </div>
@@ -227,7 +227,7 @@ export default function RegisterPage() {
             Confirm Password
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <Lock className="h-4 w-4" />
             </div>
             <input
@@ -237,13 +237,13 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm min-h-[44px]"
               autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 pl-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors min-h-[44px] min-w-[44px] justify-center"
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -256,7 +256,7 @@ export default function RegisterPage() {
           type="submit"
           id="register-submit-btn"
           disabled={isLoading}
-          className="btn-primary w-full py-3 text-sm mt-2 flex items-center justify-center gap-2"
+          className="btn-primary w-full py-3 text-sm mt-2 flex items-center justify-center gap-2 min-h-[48px]"
         >
           {isLoading ? (
             <>

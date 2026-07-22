@@ -64,25 +64,25 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 animate-fade-in">
+    <div className="mx-auto max-w-5xl px-3.5 py-6 sm:px-6 animate-fade-in">
       {/* Back Link */}
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-6 focus-ring rounded-lg p-1 -m-1"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-5 focus-ring rounded-xl px-2 py-2 -ml-2 min-h-[44px]"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
+        <span>Back to Dashboard</span>
       </Link>
 
       {/* Main Group Header Card */}
-      <div className="glass-panel p-6 sm:p-8 mb-8 relative border border-indigo-500/20 bg-gradient-to-r from-indigo-950/30 via-slate-900/80 to-slate-950">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="glass-panel p-5 sm:p-8 mb-6 sm:mb-8 relative border border-indigo-500/20 bg-gradient-to-r from-indigo-950/30 via-slate-900/80 to-slate-950">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-400 border border-indigo-500/20 mb-3">
               <BookOpen className="h-3.5 w-3.5" />
               Quiz Group Collection
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">{group.name}</h1>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white mb-2">{group.name}</h1>
             <p className="text-xs sm:text-sm text-emerald-400 font-semibold flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               {questions.length} {questions.length === 1 ? 'Question' : 'Questions'} Available
@@ -109,16 +109,16 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Primary Learning Mode Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mb-6 sm:mb-8">
         {/* Study Mode Button Card */}
         <Link
           href={questions.length > 0 ? `/group/${groupId}/quiz?mode=study` : `/group/${groupId}/import`}
-          className={`glass-panel glass-panel-hover p-6 rounded-2xl border-l-4 border-l-emerald-500 flex flex-col justify-between group ${
+          className={`glass-panel glass-panel-hover p-5 sm:p-6 rounded-2xl border-l-4 border-l-emerald-500 flex flex-col justify-between group min-h-[160px] ${
             questions.length === 0 ? 'opacity-75' : ''
           }`}
         >
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3.5">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 group-hover:scale-105 transition-transform">
                 <BookOpen className="h-5.5 w-5.5" />
               </span>
@@ -126,14 +126,14 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
                 Instant Feedback
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white mb-1.5 group-hover:text-emerald-300 transition-colors">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-1.5 group-hover:text-emerald-300 transition-colors">
               Study Mode
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed">
               Immediate feedback after every question. Shows correct option letter, answer text, and explanations as you learn.
             </p>
           </div>
-          <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10 text-emerald-400 font-semibold text-xs sm:text-sm">
+          <div className="mt-5 flex items-center justify-between pt-4 border-t border-white/10 text-emerald-400 font-semibold text-xs sm:text-sm min-h-[44px]">
             <span>{questions.length > 0 ? 'Start Study Session' : 'Import Questions First'}</span>
             <Play className="h-4 w-4 fill-emerald-400 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -142,12 +142,12 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
         {/* Practice Mode Button Card */}
         <Link
           href={questions.length > 0 ? `/group/${groupId}/quiz?mode=practice` : `/group/${groupId}/import`}
-          className={`glass-panel glass-panel-hover p-6 rounded-2xl border-l-4 border-l-indigo-500 flex flex-col justify-between group ${
+          className={`glass-panel glass-panel-hover p-5 sm:p-6 rounded-2xl border-l-4 border-l-indigo-500 flex flex-col justify-between group min-h-[160px] ${
             questions.length === 0 ? 'opacity-75' : ''
           }`}
         >
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3.5">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 group-hover:scale-105 transition-transform">
                 <Award className="h-5.5 w-5.5" />
               </span>
@@ -155,14 +155,14 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
                 Exam Simulator
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white mb-1.5 group-hover:text-indigo-300 transition-colors">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-1.5 group-hover:text-indigo-300 transition-colors">
               Practice Mode
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed">
               Simulates a real timed exam. Answers and corrections remain hidden until you complete and submit the quiz.
             </p>
           </div>
-          <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10 text-indigo-400 font-semibold text-xs sm:text-sm">
+          <div className="mt-5 flex items-center justify-between pt-4 border-t border-white/10 text-indigo-400 font-semibold text-xs sm:text-sm min-h-[44px]">
             <span>{questions.length > 0 ? 'Start Practice Exam' : 'Import Questions First'}</span>
             <Play className="h-4 w-4 fill-indigo-400 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -170,53 +170,54 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Secondary Actions Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 sm:mb-8">
         <Link
           href={`/group/${groupId}/import`}
-          className="btn-secondary py-3 text-xs sm:text-sm flex items-center justify-center gap-2"
+          className="btn-secondary py-3 px-4 text-xs sm:text-sm flex items-center justify-center gap-2 min-h-[48px]"
         >
           <FileText className="h-4 w-4 text-indigo-400" />
-          Import Questions
+          <span>Import Questions</span>
         </Link>
 
         <Link
           href={`/group/${groupId}/stats`}
-          className="btn-secondary py-3 text-xs sm:text-sm flex items-center justify-center gap-2"
+          className="btn-secondary py-3 px-4 text-xs sm:text-sm flex items-center justify-center gap-2 min-h-[48px]"
         >
           <BarChart2 className="h-4 w-4 text-emerald-400" />
-          Statistics & Weak Areas
+          <span>Statistics & Weak Areas</span>
         </Link>
 
         <button
+          type="button"
           onClick={() => setIsDeleting(true)}
-          className="btn-danger py-3 text-xs sm:text-sm flex items-center justify-center gap-2"
+          className="btn-danger py-3 px-4 text-xs sm:text-sm flex items-center justify-center gap-2 min-h-[48px]"
         >
           <Trash2 className="h-4 w-4" />
-          Delete Group
+          <span>Delete Group</span>
         </button>
       </div>
 
       {/* Question Bank Preview */}
-      <div className="glass-panel p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="glass-panel p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
               <HelpCircle className="h-5 w-5 text-indigo-400" />
               Question Collection ({questions.length})
             </h3>
             <p className="text-xs text-slate-400">Questions currently parsed in this group</p>
           </div>
 
-          <Link href={`/group/${groupId}/import`} className="btn-primary text-xs py-2 px-3">
-            <Plus className="h-3.5 w-3.5" />
-            Add More
+          <Link href={`/group/${groupId}/import`} className="btn-primary text-xs py-2 px-3.5 min-h-[44px]">
+            <Plus className="h-4 w-4" />
+            <span>Add More</span>
           </Link>
         </div>
 
         {questions.length === 0 ? (
           <div className="py-8 text-center border border-dashed border-white/10 rounded-xl">
-            <p className="text-xs sm:text-sm text-slate-400 mb-3">No questions imported yet for this group.</p>
-            <Link href={`/group/${groupId}/import`} className="btn-secondary text-xs py-2 px-4">
+            <p className="text-xs sm:text-sm text-slate-400 mb-4">No questions imported yet for this group.</p>
+            <Link href={`/group/${groupId}/import`} className="btn-secondary text-xs py-2.5 px-4 min-h-[44px]">
               Paste & Import Questions
             </Link>
           </div>

@@ -114,7 +114,7 @@ export function subscribeAuthState(callback: (user: User | null) => void): () =>
   return onAuthStateChanged(auth, callback);
 }
 
-export function getAuthErrorMessage(code: string): string {
+export function getAuthErrorMessage(code: string, fallbackMessage?: string): string {
   switch (code) {
     case 'auth/email-already-in-use':
       return 'An account with this email already exists. Please sign in instead.';
@@ -130,12 +130,22 @@ export function getAuthErrorMessage(code: string): string {
       return 'Too many unsuccessful attempts. Please wait a few minutes before trying again.';
     case 'auth/popup-closed-by-user':
       return 'Sign in popup was closed before completing.';
+    case 'auth/popup-blocked':
+      return 'Sign in popup was blocked by your browser. Please allow popups for this website.';
+    case 'auth/cancelled-popup-request':
+      return 'Sign in attempt was cancelled.';
+    case 'auth/operation-not-allowed':
+      return 'Google Sign-In is disabled in Firebase Console. Please enable Google under Authentication > Sign-in method.';
+    case 'auth/unauthorized-domain':
+      return 'This domain is not authorized in Firebase. Please add this domain under Firebase Console > Authentication > Settings > Authorized domains.';
+    case 'auth/account-exists-with-different-credential':
+      return 'An account already exists with this email address using a different sign-in method (e.g. Email/Password).';
     case 'auth/missing-email':
       return 'Please enter an email address.';
     case 'auth/network-request-failed':
-      return 'Network error. Please check your connection and try again.';
+      return 'Network error. Please check your internet connection and try again.';
     default:
-      return 'An unexpected error occurred during authentication. Please try again.';
+      return fallbackMessage || 'An unexpected error occurred during authentication. Please check your connection or Firebase configuration.';
   }
 }
 

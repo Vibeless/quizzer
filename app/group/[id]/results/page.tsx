@@ -116,9 +116,9 @@ function ResultsContent({ groupId }: { groupId: string }) {
   const answerMap = getAnswerMap();
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 animate-fade-in">
+    <div className="mx-auto max-w-4xl px-3.5 py-6 sm:px-6 animate-fade-in">
       {/* RESULTS CARD */}
-      <div className="glass-panel p-6 sm:p-10 text-center mb-8 relative border border-indigo-500/20 bg-gradient-to-b from-indigo-950/30 via-slate-900/80 to-slate-950">
+      <div className="glass-panel p-5 sm:p-10 text-center mb-6 sm:mb-8 relative border border-indigo-500/20 bg-gradient-to-b from-indigo-950/30 via-slate-900/80 to-slate-950">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-600/20 border border-indigo-500/30 text-white shadow-xl shadow-indigo-500/20 mb-4">
           <span className={`text-3xl font-extrabold font-mono ${gradeInfo.color}`}>{gradeInfo.grade}</span>
         </div>
@@ -128,32 +128,32 @@ function ResultsContent({ groupId }: { groupId: string }) {
           Quiz Completed — {attempt.mode === 'study' ? 'Study Mode' : 'Practice Mode'}
         </span>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-1">{group.name} Results</h1>
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-white mb-1">{group.name} Results</h1>
         <p className="text-xs text-slate-400 mb-6">
           {gradeInfo.label} • Attempted on {attempt.timestamp ? new Date(attempt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}
         </p>
 
         {/* Big Percentage & Score Badges */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-lg mx-auto mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto mb-8">
           <div className="glass-panel p-4 rounded-xl border border-white/10 bg-black/30">
             <p className="text-[11px] text-slate-400 font-medium mb-1">Score</p>
-            <p className="text-2xl sm:text-3xl font-extrabold text-white font-mono">
+            <p className="text-xl sm:text-3xl font-extrabold text-white font-mono">
               {attempt.score} / {attempt.total}
             </p>
           </div>
 
           <div className="glass-panel p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
             <p className="text-[11px] text-emerald-300 font-medium mb-1">Percentage</p>
-            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">
+            <p className="text-xl sm:text-3xl font-extrabold text-emerald-400 font-mono">
               {attempt.percentage}%
             </p>
           </div>
 
           <div className="glass-panel p-4 rounded-xl border border-white/10 bg-black/30 col-span-2 sm:col-span-1">
             <p className="text-[11px] text-slate-400 font-medium mb-1">Time Taken</p>
-            <p className="text-2xl sm:text-3xl font-extrabold text-indigo-400 flex items-center justify-center gap-1.5 font-mono">
-              <Clock className="h-4.5 w-4.5 text-indigo-400" />
-              {formatTime(attempt.timeTaken)}
+            <p className="text-xl sm:text-3xl font-extrabold text-indigo-400 flex items-center justify-center gap-1.5 font-mono">
+              <Clock className="h-4.5 w-4.5 text-indigo-400 shrink-0" />
+              <span>{formatTime(attempt.timeTaken)}</span>
             </p>
           </div>
         </div>
@@ -161,21 +161,22 @@ function ResultsContent({ groupId }: { groupId: string }) {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
+            type="button"
             onClick={() => setIsReviewOpen(!isReviewOpen)}
-            className="btn-primary py-2.5 px-6 text-xs sm:text-sm w-full sm:w-auto"
+            className="btn-primary py-3 px-6 text-xs sm:text-sm w-full sm:w-auto min-h-[48px]"
           >
-            <FileText className="h-4 w-4" />
-            {isReviewOpen ? 'Hide Review' : 'Review Answers & Corrections'}
+            <FileText className="h-4 w-4 shrink-0" />
+            <span>{isReviewOpen ? 'Hide Review' : 'Review Answers & Corrections'}</span>
           </button>
 
-          <Link href={`/group/${groupId}/quiz?mode=${attempt.mode}`} className="btn-secondary py-2.5 px-5 text-xs sm:text-sm w-full sm:w-auto">
-            <RotateCcw className="h-4 w-4" />
-            Retake Quiz
+          <Link href={`/group/${groupId}/quiz?mode=${attempt.mode}`} className="btn-secondary py-3 px-5 text-xs sm:text-sm w-full sm:w-auto min-h-[48px]">
+            <RotateCcw className="h-4 w-4 shrink-0" />
+            <span>Retake Quiz</span>
           </Link>
 
-          <Link href="/" className="btn-secondary py-2.5 px-5 text-xs sm:text-sm w-full sm:w-auto">
-            <Home className="h-4 w-4" />
-            Dashboard
+          <Link href="/" className="btn-secondary py-3 px-5 text-xs sm:text-sm w-full sm:w-auto min-h-[48px]">
+            <Home className="h-4 w-4 shrink-0" />
+            <span>Dashboard</span>
           </Link>
         </div>
       </div>
@@ -184,8 +185,8 @@ function ResultsContent({ groupId }: { groupId: string }) {
       {isReviewOpen && (
         <div className="space-y-5 animate-fade-in">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <FileText className="h-5 w-5 text-indigo-400" />
+            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <FileText className="h-5 w-5 text-indigo-400 shrink-0" />
               Detailed Corrections Breakdown
             </h2>
             <span className="text-xs text-slate-400 font-mono">{questions.length} Questions</span>
@@ -201,7 +202,7 @@ function ResultsContent({ groupId }: { groupId: string }) {
               return (
                 <div
                   key={q.id}
-                  className={`glass-panel p-5 border transition-all ${
+                  className={`glass-panel p-4 sm:p-5 border transition-all ${
                     isCorrect ? 'border-emerald-500/25 bg-emerald-500/[0.04]' : 'border-rose-500/25 bg-rose-500/[0.04]'
                   }`}
                 >
@@ -217,7 +218,7 @@ function ResultsContent({ groupId }: { groupId: string }) {
                           : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                       }`}
                     >
-                      {isCorrect ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                      {isCorrect ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <XCircle className="h-3.5 w-3.5 shrink-0" />}
                       {isCorrect ? 'Correct' : 'Incorrect'}
                     </span>
                   </div>

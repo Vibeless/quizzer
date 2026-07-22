@@ -45,7 +45,7 @@ export default function LoginPage() {
       await signInWithEmail(email.trim(), password);
       router.push('/');
     } catch (err: any) {
-      setError(getAuthErrorMessage(err?.code || ''));
+      setError(getAuthErrorMessage(err?.code || '', err?.message));
     } finally {
       setIsLoading(false);
     }
@@ -95,10 +95,10 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={switchToLogin}
-            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1 hover:underline"
+            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1 hover:underline min-h-[44px]"
           >
-            <ArrowRight className="w-3 h-3 rotate-180" />
-            Back to Sign In
+            <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+            <span>Back to Sign In</span>
           </button>
         }
       >
@@ -119,7 +119,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => { setResetSent(false); setResetEmail(''); }}
-              className="text-xs text-slate-400 hover:text-slate-200 transition-colors underline"
+              className="text-xs text-slate-400 hover:text-slate-200 transition-colors underline min-h-[44px]"
             >
               Try a different email
             </button>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Mail className="h-4 w-4" />
                 </div>
                 <input
@@ -142,7 +142,7 @@ export default function LoginPage() {
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   placeholder="you@example.com"
-              className="glass-input !pl-10 text-xs sm:text-sm"
+                  className="glass-input !pl-10 text-xs sm:text-sm min-h-[44px]"
                   autoComplete="email"
                   autoFocus
                 />
@@ -153,7 +153,7 @@ export default function LoginPage() {
               type="submit"
               id="reset-submit-btn"
               disabled={resetLoading}
-              className="btn-primary w-full py-3 text-sm mt-2 flex items-center justify-center gap-2"
+              className="btn-primary w-full py-3 text-sm mt-2 flex items-center justify-center gap-2 min-h-[48px]"
             >
               {resetLoading ? (
                 <>
@@ -185,10 +185,10 @@ export default function LoginPage() {
           Don&apos;t have an account?{' '}
           <Link
             href="/register"
-            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1 hover:underline"
+            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1 hover:underline min-h-[44px]"
           >
-            Create an account
-            <ArrowRight className="w-3 h-3" />
+            <span>Create an account</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </p>
       }
@@ -200,7 +200,7 @@ export default function LoginPage() {
             Email Address
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <Mail className="h-4 w-4" />
             </div>
             <input
@@ -210,7 +210,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="glass-input !pl-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm min-h-[44px]"
               autoComplete="email"
             />
           </div>
@@ -226,13 +226,13 @@ export default function LoginPage() {
               type="button"
               id="forgot-password-link"
               onClick={switchToForgot}
-              className="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors hover:underline"
+              className="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors hover:underline min-h-[44px] flex items-center"
             >
               Forgot password?
             </button>
           </div>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <Lock className="h-4 w-4" />
             </div>
             <input
@@ -242,13 +242,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm min-h-[44px]"
               autoComplete="current-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 pl-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors min-h-[44px] min-w-[44px] justify-center"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -261,7 +261,7 @@ export default function LoginPage() {
           type="submit"
           id="login-submit-btn"
           disabled={isLoading}
-          className="btn-primary w-full py-3 text-sm mt-2 flex items-center justify-center gap-2"
+          className="btn-primary w-full py-3 text-sm mt-2 flex items-center justify-center gap-2 min-h-[48px]"
         >
           {isLoading ? (
             <>
