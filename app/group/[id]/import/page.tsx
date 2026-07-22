@@ -26,9 +26,11 @@ export default function ImportQuestions({ params }: { params: Promise<{ id: stri
   const [rawText, setRawText] = useState('');
   const [parsedQuestions, setParsedQuestions] = useState<Question[]>([]);
   const [hasParsed, setHasParsed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setGroup(getGroup(groupId));
+    setIsLoading(false);
   }, [groupId]);
 
   const handleParse = () => {
@@ -44,6 +46,32 @@ export default function ImportQuestions({ params }: { params: Promise<{ id: stri
 
   const handleQuestionChange = (index: number, updated: Question) => {
     const next = [...parsedQuestions];
+    
+    // Re-verify validity
+    const errors: string[] = [];
+    let isValid = true;
+
+    if (!updated.question.trim()) {
+      isValid = false;
+      errors.push('Missing question text');
+    }
+
+    if (updated.options.length < 2) {
+      isValid = false;
+      errors.push(`Requires at least 2 options (found ${updated.options.length})`);
+    }
+
+    if (!updated.correctAnswer.letter) {
+      isValid = false;
+      errors.push('Missing correct answer');
+    } else if (!updated.options.some((o) => o.letter === updated.correctAnswer.letter)) {
+      isValid = false;
+      errors.push(`Answer key "${updated.correctAnswer.letter}" does not match any option`);
+    }
+
+    updated.isValid = isValid;
+    updated.validationError = errors.join('; ');
+
     next[index] = updated;
     setParsedQuestions(next);
   };
@@ -64,7 +92,14 @@ export default function ImportQuestions({ params }: { params: Promise<{ id: stri
     router.push(`/group/${groupId}`);
   };
 
-  if (!group) return null;
+  if (isLoading || !group) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-12 text-center">
+        <div className="h-8 w-48 skeleton mx-auto mb-4" />
+        <div className="h-48 w-full skeleton rounded-2xl" />
+      </div>
+    );
+  }
 
   const validCount = parsedQuestions.filter((q) => q.isValid).length;
   const invalidCount = parsedQuestions.length - validCount;
@@ -136,7 +171,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
             <p className="text-[11px] text-slate-400">
-              Supported formats: <span className="text-slate-300 font-mono">1., Q1, A. B. C. D., Answer: C / Ans: C</span>
+              Supported formats: <span className="text-slate-300 font-mono">1., Q1, Question 1, A. B. C. D. E. F., Answer: C / Ans: C</span>
             </p>
 
             <button
@@ -237,7 +272,7 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                         value={opt.text}
                         onChange={(e) => {
                           const nextOpts = [...q.options];
-                          nextOpts[optIndex].text = e.target.value;
+                          nextOpts[optIndex] = { ...nextOpts[optIndex], text: e.target.value };
                           handleQuestionChange(qIndex, { ...q, options: nextOpts });
                         }}
                         className="w-full glass-input text-xs py-1.5"
@@ -261,7 +296,6 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
                             letter,
                             text: match ? match.text : q.correctAnswer.text,
                           },
-                          isValid: true,
                         });
                       }}
                       className="glass-input py-1 px-3 bg-[#0b101d] text-indigo-300 font-bold text-xs"
@@ -301,4 +335,3 @@ Explanation: HTTPS uses SSL/TLS encryption...`}
     </div>
   );
 }
-

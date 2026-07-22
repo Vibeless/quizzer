@@ -2,7 +2,6 @@
 
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   BarChart2,
@@ -19,18 +18,25 @@ import { getGroup, getGroupStats } from '@/lib/storage';
 
 export default function GroupStatistics({ params }: { params: Promise<{ id: string }> }) {
   const { id: groupId } = use(params);
-  const router = useRouter();
 
-  const group: QuizGroup | null = getGroup(groupId);
+  const [group, setGroup] = useState<QuizGroup | null>(null);
   const [stats, setStats] = useState<GroupStats | null>(null);
 
   useEffect(() => {
     if (!groupId) return;
+    setGroup(getGroup(groupId));
     const st = getGroupStats(groupId);
     setStats(st);
   }, [groupId]);
 
-  if (!group || !stats) return null;
+  if (!group || !stats) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-12 text-center">
+        <div className="h-8 w-48 skeleton mx-auto mb-4" />
+        <div className="h-48 w-full skeleton rounded-2xl" />
+      </div>
+    );
+  }
 
   const formatTime = (secs: number) => {
     if (!secs) return '0s';
@@ -93,10 +99,10 @@ export default function GroupStatistics({ params }: { params: Promise<{ id: stri
                 <Award className="h-3.5 w-3.5" /> Best Score
               </div>
               <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">
-                {stats.bestScore?.percentage}%
+                {stats.bestScore ? `${stats.bestScore.percentage}%` : 'N/A'}
               </p>
               <p className="text-[11px] text-slate-300 mt-1 font-mono">
-                {stats.bestScore?.score} / {stats.bestScore?.total}
+                {stats.bestScore ? `${stats.bestScore.score} / ${stats.bestScore.total}` : 'No attempts'}
               </p>
             </div>
 
@@ -106,10 +112,10 @@ export default function GroupStatistics({ params }: { params: Promise<{ id: stri
                 <TrendingUp className="h-3.5 w-3.5" /> Average Score
               </div>
               <p className="text-2xl sm:text-3xl font-extrabold text-indigo-300 font-mono">
-                {stats.avgScore?.percentage}%
+                {stats.avgScore ? `${stats.avgScore.percentage}%` : 'N/A'}
               </p>
               <p className="text-[11px] text-slate-300 mt-1 font-mono">
-                {stats.avgScore?.score} / {stats.avgScore?.total}
+                {stats.avgScore ? `${stats.avgScore.score} / ${stats.avgScore.total}` : 'No attempts'}
               </p>
             </div>
 
@@ -130,10 +136,10 @@ export default function GroupStatistics({ params }: { params: Promise<{ id: stri
                 <CheckCircle2 className="h-3.5 w-3.5 text-teal-400" /> Last Attempt
               </div>
               <p className="text-2xl sm:text-3xl font-extrabold text-teal-300 font-mono">
-                {stats.lastAttempt?.percentage}%
+                {stats.lastAttempt ? `${stats.lastAttempt.percentage}%` : 'N/A'}
               </p>
               <p className="text-[11px] text-slate-400 mt-1 font-mono">
-                {stats.lastAttempt?.score} / {stats.lastAttempt?.total}
+                {stats.lastAttempt ? `${stats.lastAttempt.score} / ${stats.lastAttempt.total}` : 'No attempts'}
               </p>
             </div>
 
@@ -201,4 +207,3 @@ export default function GroupStatistics({ params }: { params: Promise<{ id: stri
     </div>
   );
 }
-

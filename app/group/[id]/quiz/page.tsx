@@ -18,7 +18,7 @@ function QuizContent({ groupId }: { groupId: string }) {
   const searchParams = useSearchParams();
   const mode = (searchParams.get('mode') as 'study' | 'practice') || 'practice';
 
-  const group: QuizGroup | null = getGroup(groupId);
+  const [group, setGroup] = useState<QuizGroup | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -29,6 +29,7 @@ function QuizContent({ groupId }: { groupId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    setGroup(getGroup(groupId));
     const qList = getQuestions(groupId);
     if (qList.length === 0) {
       router.push(`/group/${groupId}`);
@@ -102,16 +103,27 @@ function QuizContent({ groupId }: { groupId: string }) {
     router.push(`/group/${groupId}/results?attemptId=${attempt.id}`);
   }, [isSubmitting, questions, selectedAnswers, groupId, mode, elapsedSeconds, router]);
 
-  // Keyboard navigation shortcuts
+  // Keyboard navigation shortcuts with input checking
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!currentQuestion) return;
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
       const key = e.key.toUpperCase();
 
-      if (['A', 'B', 'C', 'D', 'E'].includes(key)) {
+      if (key.length === 1 && key >= 'A' && key <= 'Z') {
         const optionExists = currentQuestion.options.some((o) => o.letter === key);
         if (optionExists) handleSelectOption(key);
-      } else if (['1', '2', '3', '4', '5'].includes(key)) {
+      } else if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
         const idx = parseInt(key) - 1;
         if (currentQuestion.options[idx]) {
           handleSelectOption(currentQuestion.options[idx].letter);
@@ -129,7 +141,14 @@ function QuizContent({ groupId }: { groupId: string }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentQuestion, currentIndex, questions.length, handleSelectOption, handleNext, handlePrev, handleSubmitQuiz]);
 
-  if (!group || questions.length === 0 || !currentQuestion) return null;
+  if (!group || questions.length === 0 || !currentQuestion) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12 text-center">
+        <div className="h-8 w-48 skeleton mx-auto mb-4" />
+        <div className="h-40 w-full skeleton rounded-2xl" />
+      </div>
+    );
+  }
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -198,7 +217,7 @@ function QuizContent({ groupId }: { groupId: string }) {
 
         {/* Keyboard shortcut hint */}
         <div className="hidden sm:block text-[10px] text-slate-500 mb-4 font-mono">
-          Tip: Press <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">A</kbd>-<kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">D</kbd> or <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">1</kbd>-<kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">4</kbd> to select option, <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">←</kbd> <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">→</kbd> to navigate
+          Tip: Press <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">A</kbd>-<kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">Z</kbd> or <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">1</kbd>-<kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">9</kbd> to select option, <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">←</kbd> <kbd className="px-1 py-0.5 bg-white/10 rounded text-slate-300">→</kbd> to navigate
         </div>
 
         {/* Options List */}
@@ -340,5 +359,3 @@ export default function QuizExecution({
     </Suspense>
   );
 }
-
-

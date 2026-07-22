@@ -79,7 +79,7 @@ export function parseRawQuestions(rawText: string, groupId: string = ''): ParseR
     }
 
     const questionObj: Question = {
-      id: currentQuestion.id || `q_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      id: currentQuestion.id || `q_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       groupId,
       question: qText,
       options,
@@ -98,9 +98,9 @@ export function parseRawQuestions(rawText: string, groupId: string = ''): ParseR
     mode = 'IDLE';
   };
 
-  const questionHeaderRegex = /^\s*(?:Q(?:uestion)?\s*)?\(?(\d+)\)?[.:\)\s]\s*(.*)$/i;
-  const optionRegex = /^\s*\(?([A-Ea-e])\)?[.:\)\s]\s*(.+)$/;
-  const answerRegex = /^\s*(?:Correct\s*)?(?:Answer|Ans|Key)\s*[:=\-]?\s*([A-Ea-e])?(?:[\s\-:\.]+(.*))?$/i;
+  const questionHeaderRegex = /^\s*(?:(?:Q(?:uestion)?\s*)?\(?(\d+)\)?[.:\)\s]|Q(?:uestion)?\s*[:\.]?)\s*(.*)$/i;
+  const optionRegex = /^\s*\(?([A-Za-z])\)?[.:\)\s]\s*(.+)$/;
+  const answerRegex = /^\s*(?:Correct\s*)?(?:Answer|Ans|Key)\s*[:=\-]?\s*([A-Za-z])?(?:[\s\-:\.]+(.*))?$/i;
   const explanationRegex = /^\s*(?:Explanation|Explain|Note)\s*[:=\-]?\s*(.*)$/i;
 
   for (let i = 0; i < lines.length; i++) {
@@ -160,7 +160,7 @@ export function parseRawQuestions(rawText: string, groupId: string = ''): ParseR
       continue;
     }
 
-    // Check for Question Header line (1. Which protocol..., Q2: ..., Question 3)
+    // Check for Question Header line
     const qMatch = line.match(questionHeaderRegex);
 
     // Ensure it's not mistakenly matching an option or answer
@@ -176,9 +176,9 @@ export function parseRawQuestions(rawText: string, groupId: string = ''): ParseR
       }
 
       currentQuestion = {
-        id: `q_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 5)}`,
+        id: `q_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}`,
         groupId,
-        question: qMatch[2] ? qMatch[2].trim() : '',
+        question: qMatch[2] ? qMatch[2].trim() : line,
         options: [],
         correctAnswer: { letter: '', text: '' },
       };

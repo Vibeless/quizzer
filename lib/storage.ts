@@ -5,17 +5,32 @@ const STORAGE_KEYS = {
   GROUPS: 'quizzer_groups',
   QUESTIONS: 'quizzer_questions',
   ATTEMPTS: 'quizzer_attempts',
+  SEEDED: 'quizzer_has_seeded',
 };
 
 // Helper for safe SSR window check
 const isClient = () => typeof window !== 'undefined';
 
+// Safe JSON parser helper to prevent unhandled SyntaxError crashes
+function safeParseJSON<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch (err) {
+    console.error('Error parsing JSON from localStorage:', err);
+    return fallback;
+  }
+}
+
 // Initial seed data generator
 function seedDefaultData() {
   if (!isClient()) return;
 
+  const hasSeeded = localStorage.getItem(STORAGE_KEYS.SEEDED);
   const existingGroups = localStorage.getItem(STORAGE_KEYS.GROUPS);
-  if (!existingGroups || JSON.parse(existingGroups).length === 0) {
+
+  // Only seed if app has never been seeded AND no groups key exists
+  if (!hasSeeded && existingGroups === null) {
     const netGroupId = 'group_networking_demo';
     const bioGroupId = 'group_biology_demo';
     const javaGroupId = 'group_java_demo';
@@ -30,12 +45,18 @@ function seedDefaultData() {
 
     localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(defaultGroups));
 
-    // Seed questions for Networking
-    const parsed = parseRawQuestions(SAMPLE_QUESTION_TEXT, netGroupId);
-    localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(parsed.questions));
+    // Seed questions for Networking demo if not already populated
+    const existingQuestions = safeParseJSON<Question[]>(localStorage.getItem(STORAGE_KEYS.QUESTIONS), []);
+    if (existingQuestions.length === 0) {
+      const parsed = parseRawQuestions(SAMPLE_QUESTION_TEXT, netGroupId);
+      localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(parsed.questions));
+    }
 
-    // Seed empty attempts
-    localStorage.setItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.ATTEMPTS)) {
+      localStorage.setItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify([]));
+    }
+
+    localStorage.setItem(STORAGE_KEYS.SEEDED, 'true');
   }
 }
 
@@ -44,7 +65,7 @@ export function getGroups(): QuizGroup[] {
   if (!isClient()) return [];
   seedDefaultData();
   const raw = localStorage.getItem(STORAGE_KEYS.GROUPS);
-  return raw ? JSON.parse(raw) : [];
+  return safeParseJSON<QuizGroup[]>(raw, []);
 }
 
 export function getGroup(groupId: string): QuizGroup | null {
@@ -55,7 +76,7 @@ export function getGroup(groupId: string): QuizGroup | null {
 export function createGroup(name: string): QuizGroup {
   const groups = getGroups();
   const newGroup: QuizGroup = {
-    id: `group_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    id: `group_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     name: name.trim(),
     questionCount: 0,
     createdAt: new Date().toISOString(),
@@ -96,7 +117,7 @@ export function deleteGroup(groupId: string): void {
 function getAllQuestions(): Question[] {
   if (!isClient()) return [];
   const raw = localStorage.getItem(STORAGE_KEYS.QUESTIONS);
-  return raw ? JSON.parse(raw) : [];
+  return safeParseJSON<Question[]>(raw, []);
 }
 
 export function getQuestions(groupId: string): Question[] {
@@ -158,7 +179,7 @@ export function deleteQuestion(questionId: string): void {
 function getAllAttempts(): Attempt[] {
   if (!isClient()) return [];
   const raw = localStorage.getItem(STORAGE_KEYS.ATTEMPTS);
-  return raw ? JSON.parse(raw) : [];
+  return safeParseJSON<Attempt[]>(raw, []);
 }
 
 export function getAttempts(groupId: string): Attempt[] {
@@ -174,7 +195,7 @@ export function saveAttempt(attempt: Omit<Attempt, 'id' | 'timestamp'>): Attempt
 
   const fullAttempt: Attempt = {
     ...attempt,
-    id: `att_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     timestamp: new Date().toISOString(),
   };
 
@@ -207,7 +228,7 @@ export function getGroupStats(groupId: string): GroupStats {
   const missMap: Record<string, { missCount: number; totalTimesSeen: number }> = {};
 
   attempts.forEach((att) => {
-    if (att.percentage > best.percentage) {
+    if (att.percentage > (best?.percentage ?? 0)) {
       best = att;
     }
     totalScoreSum += att.score;
@@ -215,15 +236,17 @@ export function getGroupStats(groupId: string): GroupStats {
     totalTimeSum += att.timeTaken;
 
     // Track missed questions
-    att.answers.forEach((ans) => {
-      if (!missMap[ans.questionId]) {
-        missMap[ans.questionId] = { missCount: 0, totalTimesSeen: 0 };
-      }
-      missMap[ans.questionId].totalTimesSeen += 1;
-      if (!ans.isCorrect) {
-        missMap[ans.questionId].missCount += 1;
-      }
-    });
+    if (Array.isArray(att.answers)) {
+      att.answers.forEach((ans) => {
+        if (!missMap[ans.questionId]) {
+          missMap[ans.questionId] = { missCount: 0, totalTimesSeen: 0 };
+        }
+        missMap[ans.questionId].totalTimesSeen += 1;
+        if (!ans.isCorrect) {
+          missMap[ans.questionId].missCount += 1;
+        }
+      });
+    }
   });
 
   const avgPercentage = totalCountSum > 0 ? (totalScoreSum / totalCountSum) * 100 : 0;
@@ -246,18 +269,20 @@ export function getGroupStats(groupId: string): GroupStats {
     .sort((a, b) => b.missCount - a.missCount || b.missPercentage - a.missPercentage);
 
   return {
-    bestScore: {
-      score: best.score,
-      total: best.total,
-      percentage: Math.round(best.percentage * 10) / 10,
-    },
+    bestScore: best
+      ? {
+          score: best.score,
+          total: best.total,
+          percentage: Math.round(best.percentage * 10) / 10,
+        }
+      : null,
     avgScore: {
       score: Math.round(totalScoreSum / attempts.length),
       total: Math.round(totalCountSum / attempts.length),
       percentage: Math.round(avgPercentage * 10) / 10,
     },
     totalAttempts: attempts.length,
-    lastAttempt: attempts[0],
+    lastAttempt: attempts[0] || null,
     avgTimeSeconds,
     frequentlyMissed,
   };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   CheckCircle2,
   XCircle,
@@ -20,13 +20,15 @@ function ResultsContent({ groupId }: { groupId: string }) {
   const searchParams = useSearchParams();
   const attemptId = searchParams.get('attemptId');
 
-  const group: QuizGroup | null = getGroup(groupId);
+  const [group, setGroup] = useState<QuizGroup | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   useEffect(() => {
     if (!groupId) return;
+    setGroup(getGroup(groupId));
+
     const qList = getQuestions(groupId);
     setQuestions(qList);
 
@@ -39,20 +41,26 @@ function ResultsContent({ groupId }: { groupId: string }) {
       targetAttempt = attemptsList[0];
     }
 
+    const timeouts: NodeJS.Timeout[] = [];
+
     if (targetAttempt) {
       setAttempt(targetAttempt);
       const pct = targetAttempt.percentage;
 
-      const fire = (opts: confetti.Options) =>
-        confetti({ zIndex: 9999, ...opts });
+      const fire = (opts: confetti.Options) => {
+        if (typeof window !== 'undefined') {
+          confetti({ zIndex: 9999, ...opts });
+        }
+      };
 
       if (pct === 100) {
         fire({ particleCount: 120, angle: 60, spread: 55, origin: { x: 0, y: 0.65 } });
         fire({ particleCount: 120, angle: 120, spread: 55, origin: { x: 1, y: 0.65 } });
-        setTimeout(() => {
+        const timer1 = setTimeout(() => {
           fire({ particleCount: 80, angle: 60, spread: 70, origin: { x: 0, y: 0.7 }, colors: ['#ffd700', '#ff6b6b', '#4ecdc4'] });
           fire({ particleCount: 80, angle: 120, spread: 70, origin: { x: 1, y: 0.7 }, colors: ['#ffd700', '#ff6b6b', '#4ecdc4'] });
         }, 300);
+        timeouts.push(timer1);
       } else if (pct >= 80) {
         fire({ particleCount: 100, spread: 70, origin: { x: 0.5, y: 0.65 } });
       } else if (pct >= 50) {
@@ -61,9 +69,20 @@ function ResultsContent({ groupId }: { groupId: string }) {
         fire({ particleCount: 30, spread: 50, startVelocity: 20, origin: { x: 0.5, y: 0.65 }, colors: ['#89f7fe', '#66a6ff'] });
       }
     }
+
+    return () => {
+      timeouts.forEach((t) => clearTimeout(t));
+    };
   }, [groupId, attemptId]);
 
-  if (!group || !attempt) return null;
+  if (!group || !attempt) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
+        <div className="h-10 w-48 skeleton mx-auto mb-4" />
+        <div className="h-48 w-full skeleton rounded-2xl" />
+      </div>
+    );
+  }
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -83,12 +102,14 @@ function ResultsContent({ groupId }: { groupId: string }) {
 
   const getAnswerMap = () => {
     const map: Record<string, { selectedLetter: string; isCorrect: boolean }> = {};
-    attempt.answers.forEach((ans) => {
-      map[ans.questionId] = {
-        selectedLetter: ans.selectedLetter,
-        isCorrect: ans.isCorrect,
-      };
-    });
+    if (Array.isArray(attempt.answers)) {
+      attempt.answers.forEach((ans) => {
+        map[ans.questionId] = {
+          selectedLetter: ans.selectedLetter,
+          isCorrect: ans.isCorrect,
+        };
+      });
+    }
     return map;
   };
 
@@ -108,7 +129,9 @@ function ResultsContent({ groupId }: { groupId: string }) {
         </span>
 
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-1">{group.name} Results</h1>
-        <p className="text-xs text-slate-400 mb-6">{gradeInfo.label} • Attempted on {new Date(attempt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+        <p className="text-xs text-slate-400 mb-6">
+          {gradeInfo.label} • Attempted on {attempt.timestamp ? new Date(attempt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently'}
+        </p>
 
         {/* Big Percentage & Score Badges */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-lg mx-auto mb-8">
@@ -251,5 +274,3 @@ export default function QuizResults({ params }: { params: Promise<{ id: string }
     </Suspense>
   );
 }
-
-

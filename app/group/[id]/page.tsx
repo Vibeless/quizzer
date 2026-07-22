@@ -27,6 +27,7 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
   const [questions, setQuestions] = useState<Question[]>([]);
   const [stats, setStats] = useState<GroupStats | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -35,7 +36,7 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
   const loadData = () => {
     const grp = getGroup(groupId);
     if (!grp) {
-      router.push('/');
+      setIsLoading(false);
       return;
     }
     setGroup(grp);
@@ -45,6 +46,7 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
 
     const st = getGroupStats(groupId);
     setStats(st);
+    setIsLoading(false);
   };
 
   const confirmDelete = () => {
@@ -52,7 +54,14 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
     router.push('/');
   };
 
-  if (!group) return null;
+  if (isLoading || !group) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-12 text-center">
+        <div className="h-8 w-48 skeleton mx-auto mb-4" />
+        <div className="h-48 w-full skeleton rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 animate-fade-in">
@@ -86,7 +95,7 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
               <div>
                 <p className="text-[11px] text-slate-400 font-medium">Best Score</p>
                 <p className="text-lg font-extrabold text-emerald-400">
-                  {stats.bestScore?.percentage}%
+                  {stats.bestScore?.percentage ?? 0}%
                 </p>
               </div>
               <div className="h-8 w-px bg-white/10" />
@@ -243,4 +252,3 @@ export default function GroupDetail({ params }: { params: Promise<{ id: string }
     </div>
   );
 }
-
