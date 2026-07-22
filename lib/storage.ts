@@ -1,5 +1,17 @@
 import { QuizGroup, Question, Attempt, GroupStats } from './types';
 import { parseRawQuestions, SAMPLE_QUESTION_TEXT } from './parser';
+import { db, auth, isFirebaseConfigured } from './firebase';
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  deleteDoc,
+  query,
+  where,
+  DocumentData,
+  QueryDocumentSnapshot,
+} from 'firebase/firestore';
 
 const STORAGE_KEYS = {
   GROUPS: 'quizzer_groups',
@@ -10,6 +22,11 @@ const STORAGE_KEYS = {
 
 // Helper for safe SSR window check
 const isClient = () => typeof window !== 'undefined';
+
+// Returns the current user's uid, or null if not authenticated
+function getCurrentUid(): string | null {
+  return auth?.currentUser?.uid ?? null;
+}
 
 // Safe JSON parser helper to prevent unhandled SyntaxError crashes
 function safeParseJSON<T>(raw: string | null, fallback: T): T {
@@ -60,6 +77,62 @@ function seedDefaultData() {
   }
 }
 
+// FIRESTORE BACKGROUND ASYNC SYNC
+async function syncGroupToFirestore(group: QuizGroup) {
+  if (!db || !isFirebaseConfigured()) return;
+  const uid = getCurrentUid();
+  if (!uid) return;
+  try {
+    await setDoc(doc(db, 'groups', group.id), { ...group, userId: uid }, { merge: true });
+  } catch (err) {
+    console.warn('Firestore group sync error:', err);
+  }
+}
+
+async function removeGroupFromFirestore(groupId: string) {
+  if (!db || !isFirebaseConfigured()) return;
+  if (!getCurrentUid()) return;
+  try {
+    await deleteDoc(doc(db, 'groups', groupId));
+  } catch (err) {
+    console.warn('Firestore group delete error:', err);
+  }
+}
+
+async function syncQuestionsToFirestore(questions: Question[]) {
+  if (!db || !isFirebaseConfigured()) return;
+  const uid = getCurrentUid();
+  if (!uid) return;
+  try {
+    for (const q of questions) {
+      await setDoc(doc(db, 'questions', q.id), { ...q, userId: uid }, { merge: true });
+    }
+  } catch (err) {
+    console.warn('Firestore questions sync error:', err);
+  }
+}
+
+async function removeQuestionFromFirestore(questionId: string) {
+  if (!db || !isFirebaseConfigured()) return;
+  if (!getCurrentUid()) return;
+  try {
+    await deleteDoc(doc(db, 'questions', questionId));
+  } catch (err) {
+    console.warn('Firestore question delete error:', err);
+  }
+}
+
+async function syncAttemptToFirestore(attempt: Attempt) {
+  if (!db || !isFirebaseConfigured()) return;
+  const uid = getCurrentUid();
+  if (!uid) return;
+  try {
+    await setDoc(doc(db, 'attempts', attempt.id), { ...attempt, userId: uid }, { merge: true });
+  } catch (err) {
+    console.warn('Firestore attempt sync error:', err);
+  }
+}
+
 // GROUPS CRUD
 export function getGroups(): QuizGroup[] {
   if (!isClient()) return [];
@@ -84,6 +157,7 @@ export function createGroup(name: string): QuizGroup {
 
   groups.unshift(newGroup);
   localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(groups));
+  syncGroupToFirestore(newGroup);
   return newGroup;
 }
 
@@ -94,6 +168,7 @@ export function renameGroup(groupId: string, newName: string): QuizGroup | null 
 
   groups[index].name = newName.trim();
   localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(groups));
+  syncGroupToFirestore(groups[index]);
   return groups[index];
 }
 
@@ -101,6 +176,7 @@ export function deleteGroup(groupId: string): void {
   let groups = getGroups();
   groups = groups.filter((g) => g.id !== groupId);
   localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(groups));
+  removeGroupFromFirestore(groupId);
 
   // Remove questions belonging to this group
   let questions = getAllQuestions();
@@ -137,6 +213,7 @@ export function saveQuestions(groupId: string, newQuestions: Question[]): void {
 
   const updatedAll = [...all, ...formatted];
   localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updatedAll));
+  syncQuestionsToFirestore(formatted);
 
   // Update group question count
   const groups = getGroups();
@@ -144,6 +221,7 @@ export function saveQuestions(groupId: string, newQuestions: Question[]): void {
   if (grp) {
     grp.questionCount = updatedAll.filter((q) => q.groupId === groupId).length;
     localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(groups));
+    syncGroupToFirestore(grp);
   }
 }
 
@@ -154,6 +232,7 @@ export function updateQuestion(updatedQuestion: Question): void {
   if (index !== -1) {
     all[index] = updatedQuestion;
     localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(all));
+    syncQuestionsToFirestore([updatedQuestion]);
   }
 }
 
@@ -165,6 +244,7 @@ export function deleteQuestion(questionId: string): void {
 
   all = all.filter((q) => q.id !== questionId);
   localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(all));
+  removeQuestionFromFirestore(questionId);
 
   // Update group question count
   const groups = getGroups();
@@ -172,6 +252,7 @@ export function deleteQuestion(questionId: string): void {
   if (grp) {
     grp.questionCount = all.filter((q) => q.groupId === target.groupId).length;
     localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(groups));
+    syncGroupToFirestore(grp);
   }
 }
 
@@ -201,6 +282,7 @@ export function saveAttempt(attempt: Omit<Attempt, 'id' | 'timestamp'>): Attempt
 
   all.unshift(fullAttempt);
   localStorage.setItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(all));
+  syncAttemptToFirestore(fullAttempt);
   return fullAttempt;
 }
 
@@ -286,4 +368,38 @@ export function getGroupStats(groupId: string): GroupStats {
     avgTimeSeconds,
     frequentlyMissed,
   };
+}
+
+// REMOTE CLOUD FIRESTORE HYDRATION
+export async function pullCloudDataToLocal() {
+  if (!db || !isFirebaseConfigured()) return;
+  const uid = getCurrentUid();
+  if (!uid) return;
+  try {
+    const groupsSnap = await getDocs(
+      query(collection(db, 'groups'), where('userId', '==', uid))
+    );
+    const remoteGroups: QuizGroup[] = [];
+    groupsSnap.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+      remoteGroups.push(docSnap.data() as QuizGroup);
+    });
+
+    if (remoteGroups.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(remoteGroups));
+    }
+
+    const questionsSnap = await getDocs(
+      query(collection(db, 'questions'), where('userId', '==', uid))
+    );
+    const remoteQuestions: Question[] = [];
+    questionsSnap.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+      remoteQuestions.push(docSnap.data() as Question);
+    });
+
+    if (remoteQuestions.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(remoteQuestions));
+    }
+  } catch (err) {
+    console.warn('Error pulling cloud data:', err);
+  }
 }
