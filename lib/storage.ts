@@ -9,6 +9,7 @@ import {
   deleteDoc,
   query,
   where,
+  writeBatch,
   DocumentData,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
@@ -100,25 +101,32 @@ async function removeGroupFromFirestore(groupId: string) {
 }
 
 async function syncQuestionsToFirestore(questions: Question[]) {
-  if (!db || !isFirebaseConfigured()) return;
+  if (!db || !isFirebaseConfigured() || questions.length === 0) return;
   const uid = getCurrentUid();
   if (!uid) return;
   try {
+    const batch = writeBatch(db);
     for (const q of questions) {
-      await setDoc(doc(db, 'questions', q.id), { ...q, userId: uid }, { merge: true });
+      const ref = doc(db, 'questions', q.id);
+      batch.set(ref, { ...q, userId: uid }, { merge: true });
     }
+    await batch.commit();
   } catch (err) {
     console.warn('Firestore questions sync error:', err);
   }
 }
 
-async function removeQuestionFromFirestore(questionId: string) {
-  if (!db || !isFirebaseConfigured()) return;
+async function removeQuestionsFromFirestore(questionIds: string[]) {
+  if (!db || !isFirebaseConfigured() || questionIds.length === 0) return;
   if (!getCurrentUid()) return;
   try {
-    await deleteDoc(doc(db, 'questions', questionId));
+    const batch = writeBatch(db);
+    for (const qId of questionIds) {
+      batch.delete(doc(db, 'questions', qId));
+    }
+    await batch.commit();
   } catch (err) {
-    console.warn('Firestore question delete error:', err);
+    console.warn('Firestore questions delete error:', err);
   }
 }
 
@@ -180,8 +188,10 @@ export function deleteGroup(groupId: string): void {
 
   // Remove questions belonging to this group
   let questions = getAllQuestions();
+  const questionsToRemove = questions.filter((q) => q.groupId === groupId);
   questions = questions.filter((q) => q.groupId !== groupId);
   localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(questions));
+  removeQuestionsFromFirestore(questionsToRemove.map((q) => q.id));
 
   // Remove attempts belonging to this group
   let attempts = getAllAttempts();
@@ -211,7 +221,8 @@ export function saveQuestions(groupId: string, newQuestions: Question[]): void {
     groupId,
   }));
 
-  const updatedAll = [...all, ...formatted];
+  const existingIds = new Set(formatted.map((q) => q.id));
+  const updatedAll = [...all.filter((q) => !existingIds.has(q.id)), ...formatted];
   localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updatedAll));
   syncQuestionsToFirestore(formatted);
 
@@ -244,7 +255,7 @@ export function deleteQuestion(questionId: string): void {
 
   all = all.filter((q) => q.id !== questionId);
   localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(all));
-  removeQuestionFromFirestore(questionId);
+  removeQuestionsFromFirestore([questionId]);
 
   // Update group question count
   const groups = getGroups();
@@ -370,36 +381,95 @@ export function getGroupStats(groupId: string): GroupStats {
   };
 }
 
-// REMOTE CLOUD FIRESTORE HYDRATION
+// TWO-WAY CLOUD FIRESTORE & LOCALSTORAGE HYDRATION
 export async function pullCloudDataToLocal() {
   if (!db || !isFirebaseConfigured()) return;
   const uid = getCurrentUid();
   if (!uid) return;
   try {
+    // 1. GROUPS HYDRATION (TWO-WAY MERGE)
     const groupsSnap = await getDocs(
       query(collection(db, 'groups'), where('userId', '==', uid))
     );
     const remoteGroups: QuizGroup[] = [];
     groupsSnap.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-      remoteGroups.push(docSnap.data() as QuizGroup);
+      const data = docSnap.data() as QuizGroup;
+      remoteGroups.push(data);
     });
 
-    if (remoteGroups.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(remoteGroups));
+    const localGroups = getGroups();
+    const groupMap = new Map<string, QuizGroup>();
+
+    // Add local groups first
+    localGroups.forEach((g) => groupMap.set(g.id, g));
+    // Remote groups update/merge into local map
+    remoteGroups.forEach((g) => groupMap.set(g.id, g));
+
+    const mergedGroups = Array.from(groupMap.values());
+    localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(mergedGroups));
+
+    // Upload any local-only groups up to Firestore
+    const remoteGroupIds = new Set(remoteGroups.map((g) => g.id));
+    const localOnlyGroups = localGroups.filter((g) => !remoteGroupIds.has(g.id));
+    for (const g of localOnlyGroups) {
+      syncGroupToFirestore(g);
     }
 
+    // 2. QUESTIONS HYDRATION (TWO-WAY MERGE)
     const questionsSnap = await getDocs(
       query(collection(db, 'questions'), where('userId', '==', uid))
     );
     const remoteQuestions: Question[] = [];
     questionsSnap.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-      remoteQuestions.push(docSnap.data() as Question);
+      const data = docSnap.data() as Question;
+      remoteQuestions.push(data);
     });
 
-    if (remoteQuestions.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(remoteQuestions));
+    const localQuestions = getAllQuestions();
+    const questionMap = new Map<string, Question>();
+
+    // Add local questions first
+    localQuestions.forEach((q) => questionMap.set(q.id, q));
+    // Remote questions update/merge into local map
+    remoteQuestions.forEach((q) => questionMap.set(q.id, q));
+
+    const mergedQuestions = Array.from(questionMap.values());
+    localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(mergedQuestions));
+
+    // Upload any local-only questions up to Firestore
+    const remoteQuestionIds = new Set(remoteQuestions.map((q) => q.id));
+    const localOnlyQuestions = localQuestions.filter((q) => !remoteQuestionIds.has(q.id));
+    if (localOnlyQuestions.length > 0) {
+      syncQuestionsToFirestore(localOnlyQuestions);
+    }
+
+    // 3. ATTEMPTS HYDRATION (TWO-WAY MERGE)
+    const attemptsSnap = await getDocs(
+      query(collection(db, 'attempts'), where('userId', '==', uid))
+    );
+    const remoteAttempts: Attempt[] = [];
+    attemptsSnap.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+      const data = docSnap.data() as Attempt;
+      remoteAttempts.push(data);
+    });
+
+    const localAttempts = getAllAttempts();
+    const attemptMap = new Map<string, Attempt>();
+
+    localAttempts.forEach((a) => attemptMap.set(a.id, a));
+    remoteAttempts.forEach((a) => attemptMap.set(a.id, a));
+
+    const mergedAttempts = Array.from(attemptMap.values()).sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    localStorage.setItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(mergedAttempts));
+
+    const remoteAttemptIds = new Set(remoteAttempts.map((a) => a.id));
+    const localOnlyAttempts = localAttempts.filter((a) => !remoteAttemptIds.has(a.id));
+    for (const a of localOnlyAttempts) {
+      syncAttemptToFirestore(a);
     }
   } catch (err) {
-    console.warn('Error pulling cloud data:', err);
+    console.warn('Error syncing cloud and local data:', err);
   }
 }
