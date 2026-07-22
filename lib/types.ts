@@ -3,6 +3,7 @@ export interface QuizGroup {
   name: string;
   questionCount: number;
   createdAt: string;
+  userId?: string;
 }
 
 export interface QuestionOption {
@@ -22,6 +23,7 @@ export interface Question {
   explanation?: string;
   isValid?: boolean;
   validationError?: string;
+  userId?: string;
 }
 
 export interface AttemptAnswer {
@@ -40,6 +42,7 @@ export interface Attempt {
   timeTaken: number; // in seconds
   answers: AttemptAnswer[];
   timestamp: string;
+  userId?: string;
 }
 
 export interface GroupStats {

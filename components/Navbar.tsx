@@ -8,7 +8,6 @@ import {
   isFirebaseConfigured,
   subscribeAuthState,
   signInWithGoogle,
-  signInAnonymouslyUser,
   signOutUser,
 } from '@/lib/firebase';
 import { pullCloudDataToLocal } from '@/lib/storage';
@@ -35,15 +34,6 @@ export default function Navbar() {
       setIsAuthMenuOpen(false);
     } catch (err) {
       alert('Google Login Failed. Check console or Firebase Auth domain settings.');
-    }
-  };
-
-  const handleAnonLogin = async () => {
-    try {
-      await signInAnonymouslyUser();
-      setIsAuthMenuOpen(false);
-    } catch (err) {
-      alert('Anonymous Login Failed. Ensure Anonymous provider is enabled in Firebase Console.');
     }
   };
 

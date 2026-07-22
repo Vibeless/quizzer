@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: request is from a signed-in user (including anonymous)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: the document belongs to the requesting user
+    function isOwner() {
+      return resource.data.userId == request.auth.uid;
+    }
+
+    // Helper: the incoming document will be stamped with the requesting user's uid
+    function isCreatingAsOwner() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    match /groups/{groupId} {
+      allow read:   if isAuthenticated() && isOwner();
+      allow create: if isAuthenticated() && isCreatingAsOwner();
+      allow update: if isAuthenticated() && isOwner() && isCreatingAsOwner();
+      allow delete: if isAuthenticated() && isOwner();
+    }
+
+    match /questions/{questionId} {
+      allow read:   if isAuthenticated() && isOwner();
+      allow create: if isAuthenticated() && isCreatingAsOwner();
+      allow update: if isAuthenticated() && isOwner() && isCreatingAsOwner();
+      allow delete: if isAuthenticated() && isOwner();
+    }
+
+    match /attempts/{attemptId} {
+      allow read:   if isAuthenticated() && isOwner();
+      allow create: if isAuthenticated() && isCreatingAsOwner();
+      allow update: if isAuthenticated() && isOwner() && isCreatingAsOwner();
+      allow delete: if isAuthenticated() && isOwner();
+    }
+  }
+}
