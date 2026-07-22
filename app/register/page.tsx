@@ -109,7 +109,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="John Doe"
-              className="glass-input pl-9 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm"
               autoComplete="name"
             />
           </div>
@@ -131,7 +131,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="glass-input pl-9 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm"
               autoComplete="email"
             />
           </div>
@@ -153,7 +153,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="glass-input pl-9 pr-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm"
               autoComplete="new-password"
             />
             <button
@@ -237,7 +237,7 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="glass-input pl-9 pr-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm"
               autoComplete="new-password"
             />
             <button

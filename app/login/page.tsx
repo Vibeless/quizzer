@@ -142,7 +142,7 @@ export default function LoginPage() {
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="glass-input pl-9 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm"
                   autoComplete="email"
                   autoFocus
                 />
@@ -210,7 +210,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="glass-input pl-9 text-xs sm:text-sm"
+              className="glass-input !pl-10 text-xs sm:text-sm"
               autoComplete="email"
             />
           </div>
@@ -242,7 +242,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="glass-input pl-9 pr-10 text-xs sm:text-sm"
+              className="glass-input !pl-10 !pr-10 text-xs sm:text-sm"
               autoComplete="current-password"
             />
             <button
