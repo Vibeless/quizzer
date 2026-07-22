@@ -24,6 +24,11 @@ export const metadata: Metadata = {
   description:
     "Convert raw question banks instantly into interactive study & practice quizzes with deterministic parsing, instant corrections review, and performance analytics.",
   keywords: ["quiz converter", "exam simulator", "study tool", "question parser"],
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default function RootLayout({

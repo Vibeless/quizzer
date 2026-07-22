@@ -2,9 +2,10 @@
 
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
-import { BookOpen, Sparkles } from 'lucide-react';
-import { signInWithGoogle, getAuthErrorMessage } from '@/lib/firebase';
+import { Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { signInWithGoogle, getAuthErrorMessage } from '@/lib/firebase';
+import QuizzerLogo from '@/components/QuizzerLogo';
 
 interface AuthCardProps {
   title: string;
@@ -57,14 +58,9 @@ export default function AuthCard({
           <div className="text-center mb-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2.5 group p-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 mb-5 hover:bg-indigo-500/20 transition-all duration-300"
+              className="inline-flex items-center group p-1.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 mb-5 hover:bg-indigo-500/20 transition-all duration-300"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-300">
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white group-hover:text-indigo-200 transition-colors pr-1">
-                Quizzer
-              </span>
+              <QuizzerLogo size="lg" />
             </Link>
             <h1 className="text-2xl font-bold tracking-tight text-white mb-1.5">{title}</h1>
             <p className="text-sm text-slate-400 font-medium">{subtitle}</p>
